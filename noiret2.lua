@@ -68,13 +68,44 @@ FastAttackTab:AddDropdown({
     end
 })
 
--- Create a label for the debug console
-local debugLabel = StatusTab:AddLabel("Debug Console")
+-- Create a TextBox for user input (the console command line)
+local inputBox = StatusTab:AddTextBox({
+    Name = "Command Input",
+    Default = "Type your command here...",
+    ClearTextOnFocus = true,
+    TextSize = 14,
+    TextColor = Color3.fromRGB(255, 255, 255),
+    BackgroundColor = Color3.fromRGB(0, 0, 0),
+    Size = UDim2.new(1, 0, 0.1, 0), -- Adjust size as needed
+    Multiline = false  -- Single-line input box
+})
 
--- Create a function to update the label with messages
-function appendToConsole(message)
-    debugLabel:SetText(debugLabel.Text .. "\n" .. message)  -- Append new message to the label text
+-- Create a label for displaying output
+local outputLabel = StatusTab:AddLabel("Console Output:")
+
+-- Function to handle executing commands typed in the input box
+function executeCommand(command)
+    -- Use pcall to safely execute the command and capture errors
+    local success, result = pcall(function()
+        return loadstring(command)()  -- Execute the command (code) entered
+    end)
+
+    -- Update output label with the result
+    if success then
+        outputLabel:SetText("Output: " .. tostring(result))
+    else
+        outputLabel:SetText("Error: " .. tostring(result))
+    end
 end
+
+-- Listen for when the user presses Enter in the input box
+inputBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local command = inputBox.Text  -- Get the text the user typed
+        executeCommand(command)  -- Execute the command and show the result in outputLabel
+        inputBox.Text = ""  -- Clear the input box after executing the command
+    end
+end)
 
 
 -- [require module]
