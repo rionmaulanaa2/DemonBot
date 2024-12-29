@@ -226,6 +226,7 @@ end)
 
 -- Function to update debug logs
 local function updateDebugLogs(newLog)
+    print("Debug: " .. newLog) -- Log to console
     table.insert(debugLogs, newLog)
     if #debugLogs > 10 then -- Keep the latest 10 logs
         table.remove(debugLogs, 1)
@@ -235,6 +236,7 @@ end
 
 -- Function to update error logs
 local function updateErrorLogs(newLog)
+    print("Error: " .. newLog) -- Log to console
     table.insert(errorLogs, newLog)
     if #errorLogs > 10 then -- Keep the latest 10 logs
         table.remove(errorLogs, 1)
@@ -255,8 +257,9 @@ local function updatePlayerLevel()
     task.spawn(function()
         updateDebugLogs("Attempting to fetch player level...")
         local success, err = pcall(function()
-            local MyLevel = game.Players.LocalPlayer.Data.Level.Value
-            updateDebugLogs("Player level successfully fetched: " .. tostring(MyLevel))
+            local Player = game.Players.LocalPlayer
+            local MyLevel = Player:FindFirstChild("Data") and Player.Data:FindFirstChild("Level") and Player.Data.Level.Value or "Unknown"
+            updateDebugLogs("Player level fetched: " .. tostring(MyLevel))
             LevelLabel:Set("Player Level: " .. tostring(MyLevel))
         end)
         if not success then
@@ -283,6 +286,7 @@ task.spawn(function()
         updateErrorLogs("Caught simulated error: " .. tostring(err))
     end
 end)
+error("Test Error: Simulated error for debugging2")
 
 -- Initialize UI
 OrionLib:Init()
