@@ -24,22 +24,6 @@ local FastAttackTab = Window:MakeTab({
     PremiumOnly = false
 })
 
--- Debug Tab
-local DebugTab = Window:MakeTab({
-    Name = "Debug",
-    Icon = "rbxassetid://4483345998", -- Replace with any suitable icon ID
-    PremiumOnly = false
-})
-
--- Variables to store logs
-local debugLogs = {}
-local errorLogs = {}
-
--- Add UI elements for debug and error logs
-local DebugLabel = DebugTab:AddLabel("Debug Logs:")
-local ErrorLabel = DebugTab:AddLabel("Error Logs:")
-
-
 -- Status Tab
 local StatusTab = Window:MakeTab({
     Name = "Status",
@@ -57,20 +41,6 @@ FastAttackTab:AddToggle({
         print("Fast Attack: " .. tostring(value))
     end
 })
-
--- Add a toggle to enable or disable showing the level
-StatusTab:AddToggle({
-    Name = "Show Player Level",
-    Default = false,
-    Callback = function(state)
-        showLevel = state
-        updatePlayerLevel()
-    end
-})
--- Initialize variables
-local LevelLabel = StatusTab:AddLabel("Player Level: Hidden")
-local showLevel = false
-
 
 -- Fast Attack Type Dropdown
 FastAttackTab:AddDropdown({
@@ -133,27 +103,17 @@ coroutine.wrap(function()
     end
 end)()
 
--- Improved getAllBladeHits with error handling
 function getAllBladeHits(Sizes)
-    local Hits = {}
-    local Client = game.Players.LocalPlayer
-    safeExecute(function()
-        for _, v in ipairs(game:GetService("Workspace").Enemies:GetChildren()) do
-            local Human = v:FindFirstChildOfClass("Humanoid")
-            if Human and Human.RootPart and Human.Health > 0 and Client:DistanceFromCharacter(Human.RootPart.Position) < Sizes + 5 then
-                table.insert(Hits, Human.RootPart)
-            end
-        end
-    end)
-    return Hits
-end
-
--- Function to safely execute with error handling
-local function safeExecute(func)
-    local success, err = pcall(func)
-    if not success then
-        updateErrorLogs(err)
-    end
+	local Hits = {}
+	local Client = game.Players.LocalPlayer
+	local Enemies = game:GetService("Workspace").Enemies:GetChildren()
+	for i=1,#Enemies do local v = Enemies[i]
+		local Human = v:FindFirstChildOfClass("Humanoid")
+		if Human and Human.RootPart and Human.Health > 0 and Client:DistanceFromCharacter(Human.RootPart.Position) < Sizes+5 then
+			table.insert(Hits,Human.RootPart)
+		end
+	end
+	return Hits
 end
 
 function CurrentWeapon()
@@ -202,122 +162,54 @@ function AttackFunction()
 	end
 end
 
--- Optimized Background Weapon Selection Logic
+-- Background Weapon Selection Logic
 task.spawn(function()
-    while task.wait(2) do -- Adjusted wait time to prevent excessive checks
-        safeExecute(function()
-            if SelectWeapon then
-                local weaponFound = false
-                for _, v in ipairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-                    if v.ToolTip == SelectWeapon then
-                        weaponFound = true
-                        if _G.Settings.Configs["Select Weapon"] ~= v.Name then
+    while task.wait() do
+        pcall(function()
+            if SelectWeapon == "Melee" then
+                for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+                    if v.ToolTip == "Melee" then
+                        if game.Players.LocalPlayer.Backpack:FindFirstChild(tostring(v.Name)) then
                             _G.Settings.Configs["Select Weapon"] = v.Name
                             print("Selected Weapon: " .. v.Name)
                         end
-                        break
                     end
                 end
-                if not weaponFound then
-                    print("No valid weapon found for selection.")
+            elseif SelectWeapon == "Sword" then
+                for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+                    if v.ToolTip == "Sword" then
+                        if game.Players.LocalPlayer.Backpack:FindFirstChild(tostring(v.Name)) then
+                            _G.Settings.Configs["Select Weapon"] = v.Name
+                            print("Selected Weapon: " .. v.Name)
+                        end
+                    end
+                end
+            elseif SelectWeapon == "Fruit" then
+                for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+                    if v.ToolTip == "Blox Fruit" then
+                        if game.Players.LocalPlayer.Backpack:FindFirstChild(tostring(v.Name)) then
+                            _G.Settings.Configs["Select Weapon"] = v.Name
+                            print("Selected Weapon: " .. v.Name)
+                        end
+                    end
+                end
+            else
+                -- Default to Sword if no valid selection
+                for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+                    if v.ToolTip == "Sword" then
+                        if game.Players.LocalPlayer.Backpack:FindFirstChild(tostring(v.Name)) then
+                            _G.Settings.Configs["Select Weapon"] = v.Name
+                            print("Default Weapon Selected: " .. v.Name)
+                        end
+                    end
                 end
             end
         end)
     end
 end)
 
--- Function to update debug logs
-local function updateDebugLogs(newLog)
-    print("Debug: " .. newLog) -- Log to console
-    table.insert(debugLogs, newLog)
-    if #debugLogs > 10 then -- Keep the latest 10 logs
-        table.remove(debugLogs, 1)
-    end
-    DebugLabel:Set("Debug Logs:\n" .. table.concat(debugLogs, "\n"))
-end
-
--- Function to update error logs
-local function updateErrorLogs(newLog)
-    print("Error: " .. newLog) -- Log to console
-    table.insert(errorLogs, newLog)
-    if #errorLogs > 10 then -- Keep the latest 10 logs
-        table.remove(errorLogs, 1)
-    end
-    ErrorLabel:Set("Error Logs:\n" .. table.concat(errorLogs, "\n"))
-end
-
--- Example error handling
-task.spawn(function()
-    local success, err = pcall(function()
-        -- Simulate an intentional error for logging purposes
-        error("Example intentional error for debugging.")
-    end)
-    if not success then
-        updateErrorLogs(err)
-    end
-end)
 
 
--- Enhanced UI Management in createOrUpdateLabel
-local function createOrUpdateLabel()
-    local PlayerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-    local ScreenGui = PlayerGui:FindFirstChild("LevelDisplayGui")
-
-    if not ScreenGui then
-        ScreenGui = Instance.new("ScreenGui", PlayerGui)
-        ScreenGui.Name = "LevelDisplayGui"
-    else
-        -- Clean up existing labels
-        for _, v in ipairs(ScreenGui:GetChildren()) do
-            if v:IsA("TextLabel") then
-                v:Destroy()
-            end
-        end
-    end
-
-    local LevelLabel = Instance.new("TextLabel", ScreenGui)
-    LevelLabel.Name = "LevelLabel"
-    LevelLabel.Size = UDim2.new(0, 200, 0, 50)
-    LevelLabel.Position = UDim2.new(0.5, -100, 0.1, 0)
-    LevelLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    LevelLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    LevelLabel.Font = Enum.Font.SourceSans
-    LevelLabel.TextSize = 24
-
-    return LevelLabel
-end
-
-
-
-
--- Function to update the player's level display
-local function updatePlayerLevel()
-    task.spawn(function()
-        if showLevel then
-            local Player = game.Players.LocalPlayer
-
-            -- Check if Player has Data and Level
-            if Player:FindFirstChild("Data") and Player.Data:FindFirstChild("Level") then
-                local MyLevel = Player.Data.Level.Value
-                LevelLabel:Set("Player Level: " .. tostring(MyLevel))
-            else
-                LevelLabel:Set("Player Level: N/A")
-            end
-        else
-            LevelLabel:Set("Player Level: Hidden")
-        end
-    end)
-end
-
--- Periodically update player level
-task.spawn(function()
-    while task.wait(5) do -- Update every 5 seconds
-        updatePlayerLevel()
-    end
-end)
-
--- Run the update function periodically when the player's level changes
-game.Players.LocalPlayer.Data.Level.Changed:Connect(updatePlayerLevel)
 
 -- Initialize UI
 OrionLib:Init()
