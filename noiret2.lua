@@ -209,13 +209,9 @@ task.spawn(function()
 end)
 
 
--- Variables to hold player data
+-- Variables to hold the player's level
 local Player = game.Players.LocalPlayer
-local Username = Player.Name
-local MyLevel = Player:FindFirstChild("Data") and Player.Data.Level.Value or 0
-
--- Username Display
-StatusTab:AddLabel("Username: " .. Username)
+local MyLevel = Player.Data.Level.Value
 
 -- Level Display
 local LevelLabel = StatusTab:AddLabel("Level: " .. tostring(MyLevel))
@@ -224,7 +220,7 @@ local LevelLabel = StatusTab:AddLabel("Level: " .. tostring(MyLevel))
 task.spawn(function()
     while task.wait(1) do
         pcall(function()
-            MyLevel = Player:FindFirstChild("Data") and Player.Data.Level.Value or 0
+            MyLevel = Player.Data.Level.Value
             LevelLabel:Set("Level: " .. tostring(MyLevel))
         end)
     end
