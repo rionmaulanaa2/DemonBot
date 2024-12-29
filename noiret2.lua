@@ -24,6 +24,22 @@ local FastAttackTab = Window:MakeTab({
     PremiumOnly = false
 })
 
+-- Debug Tab
+local DebugTab = Window:MakeTab({
+    Name = "Debug",
+    Icon = "rbxassetid://4483345998", -- Replace with any suitable icon ID
+    PremiumOnly = false
+})
+
+-- Variables to store logs
+local debugLogs = {}
+local errorLogs = {}
+
+-- Add UI elements for debug and error logs
+local DebugLabel = DebugTab:AddLabel("Debug Logs:")
+local ErrorLabel = DebugTab:AddLabel("Error Logs:")
+
+
 -- Status Tab
 local StatusTab = Window:MakeTab({
     Name = "Status",
@@ -208,21 +224,63 @@ task.spawn(function()
     end
 end)
 
+-- Function to update debug logs
+local function updateDebugLogs(newLog)
+    table.insert(debugLogs, newLog)
+    if #debugLogs > 10 then -- Keep the latest 10 logs
+        table.remove(debugLogs, 1)
+    end
+    DebugLabel:Set("Debug Logs:\n" .. table.concat(debugLogs, "\n"))
+end
+
+-- Function to update error logs
+local function updateErrorLogs(newLog)
+    table.insert(errorLogs, newLog)
+    if #errorLogs > 10 then -- Keep the latest 10 logs
+        table.remove(errorLogs, 1)
+    end
+    ErrorLabel:Set("Error Logs:\n" .. table.concat(errorLogs, "\n"))
+end
+
 
 -- Variables to hold the player's level
-local Player = game.Players.LocalPlayer
-local MyLevel = Player.Data.Level.Value
+--local Player = game.Players.LocalPlayer
+--local MyLevel = Player.Data.Level.Value
 
--- Level Display
-local LevelLabel = StatusTab:AddLabel("Level: " .. tostring(MyLevel))
+-- Add UI element for showing player level
+local LevelLabel = StatusTab:AddLabel("Player Level: Fetching...")
 
--- Function to update Level dynamically
-task.spawn(function()
-    while task.wait(1) do
-        pcall(function()
-            MyLevel = Player.Data.Level.Value
-            LevelLabel:Set("Level: " .. tostring(MyLevel))
+-- Function to fetch and update the player's level
+local function updatePlayerLevel()
+    task.spawn(function()
+        updateDebugLogs("Attempting to fetch player level...")
+        local success, err = pcall(function()
+            local MyLevel = game.Players.LocalPlayer.Data.Level.Value
+            updateDebugLogs("Player level successfully fetched: " .. tostring(MyLevel))
+            LevelLabel:Set("Player Level: " .. tostring(MyLevel))
         end)
+        if not success then
+            updateErrorLogs("Error fetching player level: " .. tostring(err))
+            LevelLabel:Set("Player Level: Error")
+        end
+    end)
+end
+
+-- Update player level periodically
+task.spawn(function()
+    while task.wait(5) do -- Update every 5 seconds
+        updatePlayerLevel()
+    end
+end)
+
+-- Example Error Log for Debugging
+task.spawn(function()
+    local success, err = pcall(function()
+        -- Simulate an error for testing
+        error("Test Error: Simulated error for debugging")
+    end)
+    if not success then
+        updateErrorLogs("Caught simulated error: " .. tostring(err))
     end
 end)
 
