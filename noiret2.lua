@@ -24,6 +24,14 @@ local FastAttackTab = Window:MakeTab({
     PremiumOnly = false
 })
 
+-- Status Tab
+local StatusTab = Window:MakeTab({
+    Name = "Status",
+    Icon = "rbxassetid://4483345998", -- Replace with any suitable icon ID
+    PremiumOnly = false
+})
+
+
 -- Fast Attack Toggle
 FastAttackTab:AddToggle({
     Name = "Enable Fast Attack",
@@ -196,6 +204,28 @@ task.spawn(function()
                     end
                 end
             end
+        end)
+    end
+end)
+
+
+-- Variables to hold player data
+local Player = game.Players.LocalPlayer
+local Username = Player.Name
+local MyLevel = Player:FindFirstChild("Data") and Player.Data.Level.Value or 0
+
+-- Username Display
+StatusTab:AddLabel("Username: " .. Username)
+
+-- Level Display
+local LevelLabel = StatusTab:AddLabel("Level: " .. tostring(MyLevel))
+
+-- Function to update Level dynamically
+task.spawn(function()
+    while task.wait(1) do
+        pcall(function()
+            MyLevel = Player:FindFirstChild("Data") and Player.Data.Level.Value or 0
+            LevelLabel:Set("Level: " .. tostring(MyLevel))
         end)
     end
 end)
