@@ -244,25 +244,28 @@ local function updateErrorLogs(newLog)
     ErrorLabel:Set("Error Logs:\n" .. table.concat(errorLogs, "\n"))
 end
 
+-- Example error handling
+task.spawn(function()
+    local success, err = pcall(function()
+        -- Simulate an intentional error for logging purposes
+        error("Example intentional error for debugging.")
+    end)
+    if not success then
+        updateErrorLogs(err)
+    end
+end)
 
--- Variables to hold the player's level
---local Player = game.Players.LocalPlayer
---local MyLevel = Player.Data.Level.Value
-
--- Add UI element for showing player level
+-- Player Level Status Logic
 local LevelLabel = StatusTab:AddLabel("Player Level: Fetching...")
 
--- Function to fetch and update the player's level
 local function updatePlayerLevel()
     task.spawn(function()
         updateDebugLogs("Attempting to fetch player level...")
         local Player = game.Players.LocalPlayer
-        
-        -- Check if Player has Data and Level, if not set to 0
+
         if Player:FindFirstChild("Data") then
             updateDebugLogs("Found Player Data.")
             if Player.Data:FindFirstChild("Level") then
-                updateDebugLogs("Found Player Level.")
                 local MyLevel = Player.Data.Level.Value
                 updateDebugLogs("Player level fetched: " .. tostring(MyLevel))
                 LevelLabel:Set("Player Level: " .. tostring(MyLevel))
@@ -277,24 +280,13 @@ local function updatePlayerLevel()
     end)
 end
 
--- Update player level periodically
+-- Periodically update player level
 task.spawn(function()
     while task.wait(5) do -- Update every 5 seconds
         updatePlayerLevel()
     end
 end)
 
--- Example Error Log for Debugging
-task.spawn(function()
-    local success, err = pcall(function()
-        -- Simulate an error for testing
-        error("Test Error: Simulated error for debugging")
-    end)
-    if not success then
-        updateErrorLogs("Caught simulated error: " .. tostring(err))
-    end
-end)
-error("Test Error: Simulated error for debugging2")
 
 -- Initialize UI
 OrionLib:Init()
