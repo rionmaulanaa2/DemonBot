@@ -119,17 +119,27 @@ coroutine.wrap(function()
     end
 end)()
 
+-- Improved getAllBladeHits with error handling
 function getAllBladeHits(Sizes)
-	local Hits = {}
-	local Client = game.Players.LocalPlayer
-	local Enemies = game:GetService("Workspace").Enemies:GetChildren()
-	for i=1,#Enemies do local v = Enemies[i]
-		local Human = v:FindFirstChildOfClass("Humanoid")
-		if Human and Human.RootPart and Human.Health > 0 and Client:DistanceFromCharacter(Human.RootPart.Position) < Sizes+5 then
-			table.insert(Hits,Human.RootPart)
-		end
-	end
-	return Hits
+    local Hits = {}
+    local Client = game.Players.LocalPlayer
+    safeExecute(function()
+        for _, v in ipairs(game:GetService("Workspace").Enemies:GetChildren()) do
+            local Human = v:FindFirstChildOfClass("Humanoid")
+            if Human and Human.RootPart and Human.Health > 0 and Client:DistanceFromCharacter(Human.RootPart.Position) < Sizes + 5 then
+                table.insert(Hits, Human.RootPart)
+            end
+        end
+    end)
+    return Hits
+end
+
+-- Function to safely execute with error handling
+local function safeExecute(func)
+    local success, err = pcall(func)
+    if not success then
+        updateErrorLogs(err)
+    end
 end
 
 function CurrentWeapon()
@@ -178,46 +188,24 @@ function AttackFunction()
 	end
 end
 
--- Background Weapon Selection Logic
+-- Optimized Background Weapon Selection Logic
 task.spawn(function()
-    while task.wait() do
-        pcall(function()
-            if SelectWeapon == "Melee" then
-                for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-                    if v.ToolTip == "Melee" then
-                        if game.Players.LocalPlayer.Backpack:FindFirstChild(tostring(v.Name)) then
+    while task.wait(2) do -- Adjusted wait time to prevent excessive checks
+        safeExecute(function()
+            if SelectWeapon then
+                local weaponFound = false
+                for _, v in ipairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+                    if v.ToolTip == SelectWeapon then
+                        weaponFound = true
+                        if _G.Settings.Configs["Select Weapon"] ~= v.Name then
                             _G.Settings.Configs["Select Weapon"] = v.Name
                             print("Selected Weapon: " .. v.Name)
                         end
+                        break
                     end
                 end
-            elseif SelectWeapon == "Sword" then
-                for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-                    if v.ToolTip == "Sword" then
-                        if game.Players.LocalPlayer.Backpack:FindFirstChild(tostring(v.Name)) then
-                            _G.Settings.Configs["Select Weapon"] = v.Name
-                            print("Selected Weapon: " .. v.Name)
-                        end
-                    end
-                end
-            elseif SelectWeapon == "Fruit" then
-                for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-                    if v.ToolTip == "Blox Fruit" then
-                        if game.Players.LocalPlayer.Backpack:FindFirstChild(tostring(v.Name)) then
-                            _G.Settings.Configs["Select Weapon"] = v.Name
-                            print("Selected Weapon: " .. v.Name)
-                        end
-                    end
-                end
-            else
-                -- Default to Sword if no valid selection
-                for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-                    if v.ToolTip == "Sword" then
-                        if game.Players.LocalPlayer.Backpack:FindFirstChild(tostring(v.Name)) then
-                            _G.Settings.Configs["Select Weapon"] = v.Name
-                            print("Default Weapon Selected: " .. v.Name)
-                        end
-                    end
+                if not weaponFound then
+                    print("No valid weapon found for selection.")
                 end
             end
         end)
@@ -256,29 +244,31 @@ task.spawn(function()
 end)
 
 
+-- Enhanced UI Management in createOrUpdateLabel
 local function createOrUpdateLabel()
     local PlayerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
     local ScreenGui = PlayerGui:FindFirstChild("LevelDisplayGui")
 
-    -- If ScreenGui doesn't exist, create it
     if not ScreenGui then
         ScreenGui = Instance.new("ScreenGui", PlayerGui)
         ScreenGui.Name = "LevelDisplayGui"
+    else
+        -- Clean up existing labels
+        for _, v in ipairs(ScreenGui:GetChildren()) do
+            if v:IsA("TextLabel") then
+                v:Destroy()
+            end
+        end
     end
 
-    local LevelLabel = ScreenGui:FindFirstChild("LevelLabel")
-
-    -- If LevelLabel doesn't exist, create it
-    if not LevelLabel then
-        LevelLabel = Instance.new("TextLabel", ScreenGui)
-        LevelLabel.Name = "LevelLabel"
-        LevelLabel.Size = UDim2.new(0, 200, 0, 50) -- Example size
-        LevelLabel.Position = UDim2.new(0.5, -100, 0.1, 0) -- Example position
-        LevelLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-        LevelLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        LevelLabel.Font = Enum.Font.SourceSans
-        LevelLabel.TextSize = 24
-    end
+    local LevelLabel = Instance.new("TextLabel", ScreenGui)
+    LevelLabel.Name = "LevelLabel"
+    LevelLabel.Size = UDim2.new(0, 200, 0, 50)
+    LevelLabel.Position = UDim2.new(0.5, -100, 0.1, 0)
+    LevelLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    LevelLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    LevelLabel.Font = Enum.Font.SourceSans
+    LevelLabel.TextSize = 24
 
     return LevelLabel
 end
