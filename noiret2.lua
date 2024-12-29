@@ -68,33 +68,20 @@ FastAttackTab:AddDropdown({
     end
 })
 
--- Create a frame to hold the input and output elements
-local consoleFrame = Instance.new("Frame")
-consoleFrame.Size = UDim2.new(1, 0, 0.5, 0)
-consoleFrame.BackgroundTransparency = 1  -- Make the frame transparent
-consoleFrame.Parent = StatusTab
+-- Create a label for displaying output (initially empty)
+local outputLabel = StatusTab:AddLabel("Console Output:")
 
--- Create a TextBox for command input
-local inputBox = Instance.new("TextBox")
-inputBox.Size = UDim2.new(1, 0, 0.2, 0)
-inputBox.Position = UDim2.new(0, 0, 0, 0)
-inputBox.PlaceholderText = "Type your command here..."
-inputBox.TextSize = 14
-inputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-inputBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-inputBox.ClearTextOnFocus = true
-inputBox.Parent = consoleFrame
-
--- Create a label for displaying output
-local outputLabel = Instance.new("TextLabel")
-outputLabel.Size = UDim2.new(1, 0, 0.8, 0)
-outputLabel.Position = UDim2.new(0, 0, 0.2, 0)
-outputLabel.Text = "Console Output: "
-outputLabel.TextSize = 14
-outputLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-outputLabel.BackgroundTransparency = 1  -- Make it transparent
-outputLabel.TextWrapped = true
-outputLabel.Parent = consoleFrame
+-- Create a TextBox for user input
+local inputBox = StatusTab:AddTextBox({
+    Name = "Command Input",
+    Default = "Type your command here...",
+    ClearTextOnFocus = true,
+    TextSize = 14,
+    TextColor = Color3.fromRGB(255, 255, 255),
+    BackgroundColor = Color3.fromRGB(0, 0, 0),
+    Size = UDim2.new(1, 0, 0.2, 0), -- Adjust size as needed
+    Multiline = false, -- Single-line input
+})
 
 -- Function to handle executing commands typed in the input box
 function executeCommand(command)
@@ -105,9 +92,9 @@ function executeCommand(command)
 
     -- Update output label with the result
     if success then
-        outputLabel.Text = "Output: " .. tostring(result)
+        outputLabel:SetText("Output: " .. tostring(result))
     else
-        outputLabel.Text = "Error: " .. tostring(result)
+        outputLabel:SetText("Error: " .. tostring(result))
     end
 end
 
