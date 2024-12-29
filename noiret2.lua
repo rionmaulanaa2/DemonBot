@@ -255,6 +255,35 @@ task.spawn(function()
     end
 end)
 
+
+local function createOrUpdateLabel()
+    local PlayerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    local ScreenGui = PlayerGui:FindFirstChild("LevelDisplayGui")
+
+    -- If ScreenGui doesn't exist, create it
+    if not ScreenGui then
+        ScreenGui = Instance.new("ScreenGui", PlayerGui)
+        ScreenGui.Name = "LevelDisplayGui"
+    end
+
+    local LevelLabel = ScreenGui:FindFirstChild("LevelLabel")
+
+    -- If LevelLabel doesn't exist, create it
+    if not LevelLabel then
+        LevelLabel = Instance.new("TextLabel", ScreenGui)
+        LevelLabel.Name = "LevelLabel"
+        LevelLabel.Size = UDim2.new(0, 200, 0, 50) -- Example size
+        LevelLabel.Position = UDim2.new(0.5, -100, 0.1, 0) -- Example position
+        LevelLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        LevelLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        LevelLabel.Font = Enum.Font.SourceSans
+        LevelLabel.TextSize = 24
+    end
+
+    return LevelLabel
+end
+
+
 -- Player Level Status Logic
 local LevelLabel = StatusTab:AddLabel("Player Level: Fetching...")
 
@@ -262,20 +291,23 @@ local function updatePlayerLevel()
     task.spawn(function()
         updateDebugLogs("Attempting to fetch player level...")
         local Player = game.Players.LocalPlayer
+        local LevelLabel = createOrUpdateLabel()
 
+        -- Check if Player has Data and Level, if not set to 0
         if Player:FindFirstChild("Data") then
             updateDebugLogs("Found Player Data.")
             if Player.Data:FindFirstChild("Level") then
+                updateDebugLogs("Found Player Level.")
                 local MyLevel = Player.Data.Level.Value
                 updateDebugLogs("Player level fetched: " .. tostring(MyLevel))
-                LevelLabel:Set("Player Level: " .. tostring(MyLevel))
+                LevelLabel.Text = "Player Level: " .. tostring(MyLevel)
             else
                 updateErrorLogs("Level not found under Data. Setting level to 0.")
-                LevelLabel:Set("Player Level: 0")
+                LevelLabel.Text = "Player Level: 0"
             end
         else
             updateErrorLogs("Data not found for player. Setting level to 0.")
-            LevelLabel:Set("Player Level: 0")
+            LevelLabel.Text = "Player Level: 0"
         end
     end)
 end
