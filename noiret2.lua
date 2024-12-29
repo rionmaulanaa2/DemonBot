@@ -260,6 +260,7 @@ local function updatePlayerLevel()
             local Player = game.Players.LocalPlayer
             local MyLevel = Player:FindFirstChild("Data") and Player.Data:FindFirstChild("Level") and Player.Data.Level.Value or "Unknown"
             updateDebugLogs("Player level fetched: " .. tostring(MyLevel))
+            print("Player level: " .. tostring(MyLevel))  -- Debug print
             LevelLabel:Set("Player Level: " .. tostring(MyLevel))
         end)
         if not success then
