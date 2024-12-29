@@ -68,6 +68,18 @@ FastAttackTab:AddDropdown({
     end
 })
 
+-- Create a TextBox for the debug console
+local debugConsole = StatusTab:AddTextBox({
+    Name = "Debug Console",
+    Default = "Welcome to the debug console!",  -- Initial message
+    ClearTextOnFocus = false,  -- Prevents clearing text when the box is clicked
+    TextSize = 14,  -- Font size of the console text
+    TextColor = Color3.fromRGB(255, 255, 255),  -- White text color
+    BackgroundColor = Color3.fromRGB(0, 0, 0),  -- Black background
+    Size = UDim2.new(1, 0, 0.5, 0)  -- Adjust the size as needed
+    PremiumOnly = false
+})
+
 -- [require module]
 
 local CombatFramework = require(game:GetService("Players").LocalPlayer.PlayerScripts:WaitForChild("CombatFramework"))
@@ -208,16 +220,7 @@ task.spawn(function()
     end
 end)
 
--- Create a TextBox for the debug console
-local debugConsole = StatusTab:AddTextBox({
-    Name = "Debug Console",
-    Default = "Welcome to the debug console!",  -- Initial message
-    ClearTextOnFocus = false,  -- Prevents clearing text when the box is clicked
-    TextSize = 14,  -- Font size of the console text
-    TextColor = Color3.fromRGB(255, 255, 255),  -- White text color
-    BackgroundColor = Color3.fromRGB(0, 0, 0),  -- Black background
-    Size = UDim2.new(1, 0, 0.5, 0)  -- Adjust the size as needed
-})
+
 
 -- Function to append a message to the debug console
 function appendToConsole(message)
