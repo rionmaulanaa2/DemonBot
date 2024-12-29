@@ -58,6 +58,20 @@ FastAttackTab:AddToggle({
     end
 })
 
+-- Add a toggle to enable or disable showing the level
+StatusTab:AddToggle({
+    Name = "Show Player Level",
+    Default = false,
+    Callback = function(state)
+        showLevel = state
+        updatePlayerLevel()
+    end
+})
+-- Initialize variables
+local LevelLabel = StatusTab:AddLabel("Player Level: Hidden")
+local showLevel = false
+
+
 -- Fast Attack Type Dropdown
 FastAttackTab:AddDropdown({
     Name = "Fast Attack Type",
@@ -274,30 +288,23 @@ local function createOrUpdateLabel()
 end
 
 
--- Player Level Status Logic
-local LevelLabel = StatusTab:AddLabel("Player Level: Fetching...")
 
+
+-- Function to update the player's level display
 local function updatePlayerLevel()
     task.spawn(function()
-        updateDebugLogs("Attempting to fetch player level...")
-        local Player = game.Players.LocalPlayer
-        local LevelLabel = createOrUpdateLabel()
+        if showLevel then
+            local Player = game.Players.LocalPlayer
 
-        -- Check if Player has Data and Level, if not set to 0
-        if Player:FindFirstChild("Data") then
-            updateDebugLogs("Found Player Data.")
-            if Player.Data:FindFirstChild("Level") then
-                updateDebugLogs("Found Player Level.")
+            -- Check if Player has Data and Level
+            if Player:FindFirstChild("Data") and Player.Data:FindFirstChild("Level") then
                 local MyLevel = Player.Data.Level.Value
-                updateDebugLogs("Player level fetched: " .. tostring(MyLevel))
-                LevelLabel.Text = "Player Level: " .. tostring(MyLevel)
+                LevelLabel:Set("Player Level: " .. tostring(MyLevel))
             else
-                updateErrorLogs("Level not found under Data. Setting level to 0.")
-                LevelLabel.Text = "Player Level: 0"
+                LevelLabel:Set("Player Level: N/A")
             end
         else
-            updateErrorLogs("Data not found for player. Setting level to 0.")
-            LevelLabel.Text = "Player Level: 0"
+            LevelLabel:Set("Player Level: Hidden")
         end
     end)
 end
