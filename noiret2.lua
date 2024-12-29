@@ -256,16 +256,23 @@ local LevelLabel = StatusTab:AddLabel("Player Level: Fetching...")
 local function updatePlayerLevel()
     task.spawn(function()
         updateDebugLogs("Attempting to fetch player level...")
-        local success, err = pcall(function()
-            local Player = game.Players.LocalPlayer
-            local MyLevel = Player:FindFirstChild("Data") and Player.Data:FindFirstChild("Level") and Player.Data.Level.Value or "Unknown"
-            updateDebugLogs("Player level fetched: " .. tostring(MyLevel))
-            print("Player level: " .. tostring(MyLevel))  -- Debug print
-            LevelLabel:Set("Player Level: " .. tostring(MyLevel))
-        end)
-        if not success then
-            updateErrorLogs("Error fetching player level: " .. tostring(err))
-            LevelLabel:Set("Player Level: Error")
+        local Player = game.Players.LocalPlayer
+        
+        -- Check if Player has Data and Level, if not set to 0
+        if Player:FindFirstChild("Data") then
+            updateDebugLogs("Found Player Data.")
+            if Player.Data:FindFirstChild("Level") then
+                updateDebugLogs("Found Player Level.")
+                local MyLevel = Player.Data.Level.Value
+                updateDebugLogs("Player level fetched: " .. tostring(MyLevel))
+                LevelLabel:Set("Player Level: " .. tostring(MyLevel))
+            else
+                updateErrorLogs("Level not found under Data. Setting level to 0.")
+                LevelLabel:Set("Player Level: 0")
+            end
+        else
+            updateErrorLogs("Data not found for player. Setting level to 0.")
+            LevelLabel:Set("Player Level: 0")
         end
     end)
 end
