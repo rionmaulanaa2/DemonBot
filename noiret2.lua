@@ -316,6 +316,8 @@ task.spawn(function()
     end
 end)
 
+-- Run the update function periodically when the player's level changes
+game.Players.LocalPlayer.Data.Level.Changed:Connect(updatePlayerLevel)
 
 -- Initialize UI
 OrionLib:Init()
