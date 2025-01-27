@@ -1,0 +1,28 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+local teleportDistance = 10 -- Distance to teleport forward
+
+local function teleportForward()
+    -- Get the player's forward direction
+    local forwardDirection = humanoidRootPart.CFrame.LookVector
+
+    -- Calculate the new position
+    local newPosition = humanoidRootPart.Position + forwardDirection * teleportDistance
+
+    -- Move the player to the new position
+    humanoidRootPart.CFrame = CFrame.new(newPosition)
+end
+
+-- Example usage: Bind the teleport to a key press
+local UserInputService = game:GetService("UserInputService")
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+
+    -- Check if the key pressed is "F" (you can change this key)
+    if input.KeyCode == Enum.KeyCode.F then
+        teleportForward()
+    end
+end)
